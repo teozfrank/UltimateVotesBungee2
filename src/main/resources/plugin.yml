@@ -1,0 +1,4 @@
+name: UltimateVotesBungee
+main: net.teozfrank.ultimatevotesbungee.main.UltimateVotesBungee
+version: '${project.version}-dev-${git.commit.id.abbrev}'
+author: teozfrank
