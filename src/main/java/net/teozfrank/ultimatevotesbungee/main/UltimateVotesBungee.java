@@ -59,6 +59,11 @@ public class UltimateVotesBungee extends Plugin {
             }, getFileManager().getVoteStamPreventionTimeout(), getFileManager().getVoteStamPreventionTimeout(), TimeUnit.MINUTES);
         }
         registerCommands();
+        submitStats();
+    }
+
+    private void submitStats() {
+        Metrics metrics = new Metrics(this, 7320);
     }
 
     private void registerCommands() {
