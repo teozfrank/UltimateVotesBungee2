@@ -46,13 +46,13 @@ public class UltimateVotesBungee extends Plugin {
             return;
         }
         if(getFileManager().isVoteSpamPrevention()) {
-            getLogger().info("Starting clear voter task.");
+            SendConsoleMessage.info("Starting clear voter task.");
             getProxy().getScheduler().schedule(this, new Runnable() {
 
                 @Override
                 public void run() {
                     if(getFileManager().isDebugEnabled()) {
-                        getLogger().info("Clearing vote spam prevention cache.");
+                        SendConsoleMessage.info("Clearing vote spam prevention cache.");
                     }
                     getUtil().clearVotedPlayers();
                 }
