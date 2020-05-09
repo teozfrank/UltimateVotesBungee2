@@ -7,6 +7,7 @@ import net.teozfrank.ultimatevotesbungee.util.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Plugin;
 
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,6 +61,31 @@ public class UltimateVotesBungee extends Plugin {
         }
         registerCommands();
         submitStats();
+    }
+
+    @Override
+    public void onDisable() {
+        this.closeConnections();
+    }
+
+    public void closeConnections() {
+        if(! fileManager.isMySQLEnabled()) {
+            if(isDebugEnabled()) {
+                SendConsoleMessage.debug("SQL is disabled, not closing connections");
+            }
+            return;
+        }
+
+        SendConsoleMessage.info("Closing SQL connection.");
+        try {
+            if(! getDatabaseManager().getConnection().isClosed()) {
+                getDatabaseManager().getConnection().close();
+            }
+        } catch (SQLException e) {
+            SendConsoleMessage.error("SQL Error! " + e.getMessage());
+        } catch (NullPointerException e) {
+            //ignored
+        }
     }
 
     private void submitStats() {

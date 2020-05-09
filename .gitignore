@@ -19,6 +19,11 @@
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+.name
+discord.xml
+encodings.xml
+misc.xml
+vcs.xml
 
 # Gradle
 .idea/**/gradle.xml
