@@ -25,7 +25,7 @@ public class PlayerLogin implements Listener {
     @EventHandler (priority = EventPriority.NORMAL)
     public void onPlayerLogin(LoginEvent e) {
 
-        DatabaseManager mySql = plugin.getMySql();
+        DatabaseManager mySql = plugin.getDatabaseManager();
         UUID uuid = e.getConnection().getUniqueId();
         String name = e.getConnection().getName();
 

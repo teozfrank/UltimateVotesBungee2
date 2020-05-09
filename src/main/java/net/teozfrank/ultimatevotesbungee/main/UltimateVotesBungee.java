@@ -70,7 +70,7 @@ public class UltimateVotesBungee extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new UVBExecutor(this));
     }
 
-    public DatabaseManager getMySql() {
+    public DatabaseManager getDatabaseManager() {
         return mySql;
     }
 

@@ -8,18 +8,19 @@ import net.md_5.bungee.api.ProxyServer;
  */
 public class SendConsoleMessage {
 
-    private static final String prefix = ChatColor.GREEN + "[UltimateVotesBungee] ";
-    private static final String info = "[Info] ";
-    private static final String severe = ChatColor.YELLOW + "[Severe] ";
-    private static final String warning = ChatColor.RED + "[Warning] ";
+    private static final String prefix = ChatColor.GREEN + "[UltimateVotes] ";
     private static final String debug = ChatColor.AQUA + "[Debug] ";
+    private static final String error = ChatColor.RED + "[Error] ";
+    private static final String warning = ChatColor.YELLOW + "[Warning] ";
+    private static final String info = "[Info] ";
+
     public SendConsoleMessage() {
     }
     public static void info(String message) {
         ProxyServer.getInstance().getLogger().info(prefix + info + message);
     }
-    public static void severe(String message) {
-        ProxyServer.getInstance().getLogger().info(prefix + severe + message);
+    public static void error(String message) {
+        ProxyServer.getInstance().getLogger().info(prefix + error + message);
     }
     public static void warning(String message) {
         ProxyServer.getInstance().getLogger().info(prefix + warning + message);

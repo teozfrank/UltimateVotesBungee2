@@ -38,7 +38,7 @@ public class UVBExecutor extends Command {
                     + ChatColor.GOLD + " attempt to reward an online player using bungeecord communication (they need to have unclaimed votes)");
         } else if(args.length == 2 && args[0].equals("reward")) {
             String playerName = args[1];
-            UUID uuid = plugin.getMySql().getUUIDFromUsername(playerName);
+            UUID uuid = plugin.getDatabaseManager().getUUIDFromUsername(playerName);
             plugin.getUtil().sendServerMessage(uuid);
             Util.sendMessage(sender, ChatColor.GREEN + "Rewarding player " + playerName);
         } else if(args.length == 2 && args[0].equals("convert")) {
@@ -52,15 +52,16 @@ public class UVBExecutor extends Command {
             }
         } else if(args.length == 2 && args[0].equals("addtestvote")) {
             String playerName = args[1];
-            DatabaseManager mySql = plugin.getMySql();
+            DatabaseManager mySql = plugin.getDatabaseManager();
             try {
                 UUID uuid = mySql.getUUIDFromUsername(playerName);
                 if(uuid == null) {
                     Util.sendMessage(sender, ChatColor.GREEN + "UUID retrieval failed!: " + playerName);
                     return;
                 }
-                plugin.getMySql().addPlayerAllTimeVote(uuid, playerName);
-                plugin.getMySql().addPlayerMonthlyVote(uuid, playerName);
+                plugin.getDatabaseManager().addPlayerAllTimeVote(uuid, playerName);
+                plugin.getDatabaseManager().addPlayerMonthlyVote(uuid, playerName);
+                plugin.getDatabaseManager().addVoteLog(uuid, playerName, "UVTestVote", "127.0.0.1");
                 Util.sendMessage(sender, ChatColor.GREEN + "Successfully added vote for player: " + playerName);
             } catch (Exception e) {
                 e.printStackTrace();

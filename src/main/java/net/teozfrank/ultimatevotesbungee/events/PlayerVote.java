@@ -9,7 +9,6 @@ import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
-import net.teozfrank.ultimatevotesbungee.util.*;
 
 import java.util.UUID;
 
@@ -27,7 +26,7 @@ public class PlayerVote implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerVoteMade(VotifierEvent e) {
 
-        final DatabaseManager mySql = plugin.getMySql();
+        final DatabaseManager databaseManager = plugin.getDatabaseManager();
         final FileManager fm = plugin.getFileManager();
         final Util util = plugin.getUtil();
         final BroadcastManager bm = plugin.getBroadcastManager();
@@ -35,13 +34,14 @@ public class PlayerVote implements Listener {
         final Vote v = e.getVote();
         final String voteUsername = v.getUsername();
         final String service = v.getServiceName();
+        final String ipAddress = v.getAddress();
 
         if (!fm.isMySQLEnabled()) {
             return;
         }
 
         if(plugin.isDebugEnabled()) {
-            SendConsoleMessage.debug("Vote received from username " + voteUsername + " from " + v.getServiceName() + " with IP " + v.getAddress());
+            SendConsoleMessage.debug("Vote received from username " + voteUsername + " from " + v.getServiceName() + " with IP " + ipAddress);
         }
 
         if (v.getUsername().length() == 0 || v.getUsername().equalsIgnoreCase("anonymous") || v.getUsername().contains("test")) {
@@ -66,7 +66,7 @@ public class PlayerVote implements Listener {
 
                 @Override
                 public void run() {
-                    UUID playerUUID = mySql.getUUIDFromUsername(voteUsername);
+                    UUID playerUUID = databaseManager.getUUIDFromUsername(voteUsername);
 
                     boolean isOnline = false;
 
@@ -111,8 +111,10 @@ public class PlayerVote implements Listener {
                         if(plugin.isDebugEnabled()) {
                             SendConsoleMessage.debug("Player UUID for player " + voteUsername + " :" + playerUUID.toString());
                         }
-                        mySql.addPlayerAllTimeVote(playerUUID, voteUsername);
-                        mySql.addPlayerMonthlyVote(playerUUID, voteUsername);
+                        databaseManager.addPlayerAllTimeVote(playerUUID, voteUsername);
+                        databaseManager.addPlayerMonthlyVote(playerUUID, voteUsername);
+                        databaseManager.addVoteLog(playerUUID, voteUsername, service, ipAddress);
+
                         plugin.getUtil().sendServerMessage(playerUUID);
                     } else {
                         if(plugin.isDebugEnabled()) {

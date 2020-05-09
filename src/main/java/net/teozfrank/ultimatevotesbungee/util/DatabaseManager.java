@@ -28,6 +28,7 @@ public class DatabaseManager {
                     setupMonthlyVotes();
                     setupLastReset();
                     setupTopVoters();
+                    setupVoteLog();
                 }
             });
 
@@ -39,6 +40,72 @@ public class DatabaseManager {
         uuidList = new ArrayList<UUID>();
         uuidToOrigionalName = new HashMap<UUID, String>();
     }
+
+    public void addVoteLog(UUID playerUUID, String playerName, String serviceName, String IPAddress) {
+        String sql = "INSERT INTO VOTELOG VALUES (NULL, '" + playerUUID +"', '"+ playerName
+                + "', '" + serviceName
+                + "', '" + IPAddress + "', NULL)";
+        boolean success = execute(sql);
+        if(! success) {
+            SendConsoleMessage.error("Error inserting VoteLog!");
+        }
+    }
+
+    public void setupVoteLog() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            String query = "SHOW TABLES LIKE 'VOTELOG'";
+            if(plugin.isDebugEnabled()) {
+                SendConsoleMessage.debug("Preparing initial sql statement for VoteLog.");
+            }
+            PreparedStatement statement = getConnection().prepareStatement(query);
+            int i;
+            ResultSet result = statement.executeQuery();
+            i = 0;
+            while (result.next()) {
+                i++;
+            }
+            result.close();
+            statement.close();
+            if(!connection.isClosed() && !plugin.getFileManager().isMaintainConnection()) {
+                if(plugin.isDebugEnabled()) {
+                    SendConsoleMessage.debug("Closing connection, connection is not being maintained.");
+                }
+                connection.close();
+            }
+            if (!(i > 0)) {
+                SendConsoleMessage.info("Table VOTELOG does not exist creating it for you!");
+                String sql = "CREATE TABLE VOTELOG "
+                        + "(ID BIGINT NOT NULL AUTO_INCREMENT UNIQUE,"
+                        + " UUID VARCHAR(40), "
+                        + " PLAYER VARCHAR(50), "
+                        + " SERVICENAME VARCHAR(50),"
+                        + " IPADDRESS VARCHAR(30),"
+                        + " VOTETIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                        + " PRIMARY KEY ( ID ))";
+                statement = getConnection().prepareStatement(sql);
+                statement.executeUpdate();
+                statement.close();
+                if(!connection.isClosed() && !plugin.getFileManager().isMaintainConnection()) {
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("Closing connection, connection is not being maintained.");
+                    }
+                    connection.close();
+                }
+            } else {
+                if(plugin.isDebugEnabled()) {
+                    SendConsoleMessage.debug("Table VOTELOG exists, ignoring!");
+                }
+
+            }
+        } catch (ClassNotFoundException ex) {
+            SendConsoleMessage.warning("DatabaseManager driver wasn't found!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            //SendConsoleMessage.warning("DatabaseManager could not establish a connection when trying to setup all votes: " + e.printStackTrace(););
+        }
+    }
+
 
     public void setupTopVoters() {
         try {
@@ -156,7 +223,7 @@ public class DatabaseManager {
                 return connection;
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("SQL Error! " + e.getMessage());
+            SendConsoleMessage.error("SQL Error! " + e.getMessage());
         } catch (NullPointerException e) {
 
         }
@@ -529,7 +596,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("SQL ERROR while resetting daily vote target! " + e);
+            SendConsoleMessage.error("SQL ERROR while resetting daily vote target! " + e);
         }
     }
 
@@ -543,7 +610,7 @@ public class DatabaseManager {
             }
             boolean success = execute(sql);
             if (!success) {
-                SendConsoleMessage.severe("UUID update failed for player " + entry.getKey());
+                SendConsoleMessage.error("UUID update failed for player " + entry.getKey());
                 failedUpdates++;
             }
             if (!uuidList.contains(entry.getValue())) {
@@ -564,7 +631,7 @@ public class DatabaseManager {
             }
             return true;
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Error executing query: " + sql +" Error: "+ e.getMessage());
+            SendConsoleMessage.error("Error executing query: " + sql +" Error: "+ e.getMessage());
             return false;
         }
     }
@@ -628,7 +695,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("SQL Error getting uuid from username! " + e.getMessage());
+            SendConsoleMessage.error("SQL Error getting uuid from username! " + e.getMessage());
         }
 
         if (results == 0) {
@@ -726,7 +793,7 @@ public class DatabaseManager {
                                 SendConsoleMessage.debug("UUID successfully updated.");
                                 this.updateExistingMonthlyVoteRecord(playerUUID, playerName);
                             } else {
-                                SendConsoleMessage.severe("UUID was not updated successfully please check logs!!");
+                                SendConsoleMessage.error("UUID was not updated successfully please check logs!!");
                             }
                         }
                     }
@@ -812,7 +879,7 @@ public class DatabaseManager {
                                 SendConsoleMessage.debug("UUID successfully updated.");
                                 this.updateExistingAllTimeVoteRecord(playerUUID, playerName);
                             } else {
-                                SendConsoleMessage.severe("UUID was not updated successfully please check logs!!");
+                                SendConsoleMessage.error("UUID was not updated successfully please check logs!!");
                             }
                         }
                     }
@@ -995,7 +1062,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load all time votes!" + e);
+            SendConsoleMessage.error("Could not load all time votes!" + e);
         }
         return votesAllTime2;
     }
@@ -1025,7 +1092,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load all time votes!" + e);
+            SendConsoleMessage.error("Could not load all time votes!" + e);
         }
         return votesAllTime2;
     }
@@ -1055,7 +1122,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not retrieve player votes!" + e);
+            SendConsoleMessage.error("Could not retrieve player votes!" + e);
         }
         return votesAllTime;
     }
@@ -1091,7 +1158,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not retrieve player votes!" + e);
+            SendConsoleMessage.error("Could not retrieve player votes!" + e);
         }
         return votesAllTime;
     }
@@ -1121,7 +1188,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load unclaimed votes!" + e);
+            SendConsoleMessage.error("Could not load unclaimed votes!" + e);
         }
 
         if (results == 0) {
@@ -1159,7 +1226,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load unclaimed votes!" + e);
+            SendConsoleMessage.error("Could not load unclaimed votes!" + e);
         }
 
         if (amount == 0) {
@@ -1182,7 +1249,7 @@ public class DatabaseManager {
                 }
                 return true;
             } catch (SQLException e) {
-                SendConsoleMessage.severe("SQL Error!" + e);
+                SendConsoleMessage.error("SQL Error!" + e);
             }
         }
         return false;
@@ -1210,7 +1277,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not check players votes by UUID!" + e);
+            SendConsoleMessage.error("Could not check players votes by UUID!" + e);
         }
 
         if (results == 0) {
@@ -1248,7 +1315,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could check players votes by username!" + e);
+            SendConsoleMessage.error("Could check players votes by username!" + e);
         }
 
         if (results == 0) {
@@ -1280,7 +1347,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("could not check if player voted today!");
+            SendConsoleMessage.error("could not check if player voted today!");
         }
 
         if (results == 1) {
@@ -1397,7 +1464,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load top 5 daily votes votes!" + e);
+            SendConsoleMessage.error("Could not load top 5 daily votes votes!" + e);
         }
         return topFiveDailyVotes;
     }

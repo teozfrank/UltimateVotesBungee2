@@ -86,7 +86,7 @@ public class Util {
                 Server playersServer = getPlayersServerByUUID(playerUUID, playersServerInfo.getPlayers());
                 sendPluginMessage(playerUUID, playersServer);
             } catch (NullPointerException e) {
-                SendConsoleMessage.severe(e.getMessage());
+                SendConsoleMessage.error("Error Sending Server Message: " + e.getMessage());
             }
 
             return;
@@ -95,7 +95,7 @@ public class Util {
             Server playersServer = plugin.getProxy().getPlayer(playerUUID).getServer();
             sendPluginMessage(playerUUID, playersServer);
         } catch (NullPointerException e) {
-            SendConsoleMessage.severe("Null when trying to resolve players server are they online?" + e.getMessage());
+            SendConsoleMessage.error("Null when trying to resolve players server are they online?" + e.getMessage());
         }
     }
 
@@ -125,7 +125,7 @@ public class Util {
                 SendConsoleMessage.debug("Sending UUID: " + playerUUID );
             }
         } catch (IOException e) {
-            SendConsoleMessage.severe(e.getMessage());
+            SendConsoleMessage.error("Error sending plugin message: " + e.getMessage());
         }
     }
 
