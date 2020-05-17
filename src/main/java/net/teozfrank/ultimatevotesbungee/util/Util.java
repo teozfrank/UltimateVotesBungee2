@@ -101,7 +101,51 @@ public class Util {
                 if(plugin.isDebugEnabled()) {
                     SendConsoleMessage.debug("Player with uuid "+ playerUUID + " server name: " + serverName);
                 }
-                ServerInfo localProxyServer = plugin.getProxy().getServerInfo(serverName);//try resolve to local servers
+
+                String currentProxyServerID = RedisBungee.getApi().getServerId();
+                SendConsoleMessage.debug("Current Proxy Server ID: " + currentProxyServerID);
+
+                String playersProxy = RedisBungee.getApi().getProxy(playerUUID);
+
+                if(plugin.isDebugEnabled()) {
+                    SendConsoleMessage.debug("Players proxy server ID: " + playersProxy);//This tells me that the player is on another proxy
+                }
+
+
+                if(plugin.isDebugEnabled()) {
+
+                    if(playersProxy.equals(currentProxyServerID)) {
+                        SendConsoleMessage.debug("Player is on the same proxy as ultimatevotes!");
+
+                    } else {
+                        SendConsoleMessage.debug("Player is not on the same proxy, sending command to other proxy!");
+                        RedisBungee.getApi().sendProxyCommand(playersProxy, "/uvb rewarduuid " + playerUUID);
+                        return;
+                    }
+                }
+
+                /*ByteArrayOutputStream b = new ByteArrayOutputStream();
+                DataOutputStream out = new DataOutputStream(b);
+
+                try {
+                    out.writeUTF("uv:rewards");
+                    out.writeUTF(playerUUID.toString());
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("Send channel message to redis for uuid: " + playerUUID);
+                        SendConsoleMessage.debug("Channel: uv:rewards");
+                        SendConsoleMessage.debug("Bytes: " + b.toString());
+                    }
+                    //TODO see how this works?
+                    playersServerInfo.sendData("uv:rewards", b.toByteArray());
+                    RedisBungee.getApi().sendChannelMessage("uv:rewards", b.toString());
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("Sending UUID: " + playerUUID );
+                    }
+                } catch (IOException e) {
+                    SendConsoleMessage.error("Error sending plugin message: " + e.getMessage());
+                }*/
+
+                /*ServerInfo localProxyServer = plugin.getProxy().getServerInfo(serverName);//try resolve to local servers
 
                 if(localProxyServer == null ){// if the local proxy server is null, that means the player server is on another instance,
                     // we need to send to redis api
@@ -111,9 +155,9 @@ public class Util {
                 } else {
                     if(plugin.isDebugEnabled()) {
                         SendConsoleMessage.debug("Player with uuid " + playerUUID
-                                + " is not part of local servers of this proxy sending local plugin message.");
+                                + " is part of local servers of this proxy sending local plugin message.");
                     }
-                }
+                }*/
             } catch (NullPointerException e) {
                 SendConsoleMessage.error("Error Sending Server Message: " + e.getMessage());
             }

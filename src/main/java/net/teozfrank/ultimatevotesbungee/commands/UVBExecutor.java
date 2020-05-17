@@ -36,6 +36,11 @@ public class UVBExecutor extends Command {
                     + ChatColor.GOLD + " attempt add a test vote for a player");
             Util.sendEmptyMessage(sender, ChatColor.AQUA + "/uvb reward <player> - "
                     + ChatColor.GOLD + " attempt to reward an online player using bungeecord communication (they need to have unclaimed votes)");
+        }
+        else if(args.length == 2 && args[0].equals("rewarduuid")) {
+            UUID uuid = UUID.fromString(args[1]);
+            plugin.getUtil().sendServerMessage(uuid);
+            Util.sendMessage(sender, ChatColor.GREEN + "Rewarding UUID " + uuid);
         } else if(args.length == 2 && args[0].equals("reward")) {
             String playerName = args[1];
             UUID uuid = plugin.getDatabaseManager().getUUIDFromUsername(playerName);
