@@ -8,7 +8,7 @@ import net.md_5.bungee.api.ProxyServer;
  */
 public class SendConsoleMessage {
 
-    private static final String prefix = ChatColor.GREEN + "[UltimateVotes] ";
+    private static final String prefix = ChatColor.GREEN + "[UltimateVotesBungee] ";
     private static final String debug = ChatColor.AQUA + "[Debug] ";
     private static final String error = ChatColor.RED + "[Error] ";
     private static final String warning = ChatColor.YELLOW + "[Warning] ";
