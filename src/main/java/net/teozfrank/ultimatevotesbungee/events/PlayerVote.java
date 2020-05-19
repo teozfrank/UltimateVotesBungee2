@@ -1,6 +1,8 @@
 package net.teozfrank.ultimatevotesbungee.events;
 
 
+import com.imaginarycode.minecraft.redisbungee.RedisBungee;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.teozfrank.ultimatevotesbungee.main.UltimateVotesBungee;
 import net.teozfrank.ultimatevotesbungee.util.*;
 import com.vexsoftware.votifier.bungee.events.VotifierEvent;
@@ -70,17 +72,39 @@ public class PlayerVote implements Listener {
 
                     boolean isOnline = false;
 
-                    try {
-                        Server playersServer = plugin.getProxy().getPlayer(playerUUID).getServer();
+                    if (plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null) {
                         if(plugin.isDebugEnabled()) {
-                            if(playersServer == null) {
-                                SendConsoleMessage.debug("Players server is null, not online");
-                            }
+                            SendConsoleMessage.debug("RedisBungee is installed on this server, using to identify if player is online");
                         }
-                        if(playersServer != null ){
+                        ServerInfo playersServerInfo = RedisBungee.getApi().getServerFor(playerUUID);//get server object for redis
+                        if (playersServerInfo != null) {
                             isOnline = true;
+                            if(plugin.isDebugEnabled()) {
+                                SendConsoleMessage.debug("Player with uuid: " +  playerUUID + "is online");
+                            }
+                        }   else {
+                            if(plugin.isDebugEnabled()) {
+                                SendConsoleMessage.debug("Player with uuid: " +  playerUUID + "is offline");
+                            }
+                            isOnline = false;
                         }
-                    } catch (NullPointerException e) {}
+
+                    } else {
+                        try {
+                            if(plugin.isDebugEnabled()) {
+                                SendConsoleMessage.debug("RedisBungee is not installed on this server, bungee API to identify if player is online");
+                            }
+                            Server playersServer = plugin.getProxy().getPlayer(playerUUID).getServer();
+                            if(plugin.isDebugEnabled()) {
+                                if(playersServer == null) {
+                                    SendConsoleMessage.debug("Players server is null, not online");
+                                }
+                            }
+                            if(playersServer != null ){
+                                isOnline = true;
+                            }
+                        } catch (NullPointerException e) {}
+                    }
 
                     if(! isOnline && ! plugin.getFileManager().rewardOffline()) {//if the player is not online and we are not rewarding offline
                         if(plugin.isDebugEnabled()) {
