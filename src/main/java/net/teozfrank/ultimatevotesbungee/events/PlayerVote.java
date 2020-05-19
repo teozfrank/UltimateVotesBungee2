@@ -72,12 +72,20 @@ public class PlayerVote implements Listener {
 
                     try {
                         Server playersServer = plugin.getProxy().getPlayer(playerUUID).getServer();
+                        if(plugin.isDebugEnabled()) {
+                            if(playersServer == null) {
+                                SendConsoleMessage.debug("Players server is null, not online");
+                            }
+                        }
                         if(playersServer != null ){
                             isOnline = true;
                         }
                     } catch (NullPointerException e) {}
 
                     if(! isOnline && ! plugin.getFileManager().rewardOffline()) {//if the player is not online and we are not rewarding offline
+                        if(plugin.isDebugEnabled()) {
+                            SendConsoleMessage.debug("Player is not online and reward offline is set to false, vote ignored");
+                        }
                         return;// do not reward
                     }
 
