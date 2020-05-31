@@ -69,6 +69,7 @@ public class PlayerVote implements Listener {
                 @Override
                 public void run() {
                     UUID playerUUID = databaseManager.getUUIDFromUsername(voteUsername);
+                    String serverName = null;
 
                     boolean isOnline = false;
 
@@ -79,6 +80,7 @@ public class PlayerVote implements Listener {
                         ServerInfo playersServerInfo = RedisBungee.getApi().getServerFor(playerUUID);//get server object for redis
                         if (playersServerInfo != null) {
                             isOnline = true;
+                            serverName = playersServerInfo.getName();
                             if(plugin.isDebugEnabled()) {
                                 SendConsoleMessage.debug("Player with uuid: " +  playerUUID + "is online");
                             }
@@ -101,6 +103,7 @@ public class PlayerVote implements Listener {
                                 }
                             }
                             if(playersServer != null ){
+                                serverName = playersServer.getInfo().getName();
                                 isOnline = true;
                             }
                         } catch (NullPointerException e) {}
@@ -145,7 +148,7 @@ public class PlayerVote implements Listener {
                         }
                         databaseManager.addPlayerAllTimeVote(playerUUID, voteUsername);
                         databaseManager.addPlayerMonthlyVote(playerUUID, voteUsername);
-                        databaseManager.addVoteLog(playerUUID, voteUsername, service, ipAddress);
+                        databaseManager.addVoteLog(playerUUID, voteUsername, service, ipAddress, serverName);
 
                         plugin.getUtil().sendServerMessage(playerUUID);
                     } else {

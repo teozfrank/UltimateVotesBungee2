@@ -1,10 +1,10 @@
 package net.teozfrank.ultimatevotesbungee.commands;
 
+import com.imaginarycode.minecraft.redisbungee.RedisBungee;
+import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.Server;
 import net.teozfrank.ultimatevotesbungee.main.UltimateVotesBungee;
-import net.teozfrank.ultimatevotesbungee.util.BroadcastManager;
-import net.teozfrank.ultimatevotesbungee.util.DatabaseManager;
-import net.teozfrank.ultimatevotesbungee.util.UUIDFetcher;
-import net.teozfrank.ultimatevotesbungee.util.Util;
+import net.teozfrank.ultimatevotesbungee.util.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
@@ -64,9 +64,50 @@ public class UVBExecutor extends Command {
                     Util.sendMessage(sender, ChatColor.GREEN + "UUID retrieval failed!: " + playerName);
                     return;
                 }
+
+                String serverName = null;
+
+                boolean isOnline = false;
+
+                if (plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null) {
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("RedisBungee is installed on this server, using to identify if player is online");
+                    }
+                    ServerInfo playersServerInfo = RedisBungee.getApi().getServerFor(uuid);//get server object for redis
+                    if (playersServerInfo != null) {
+                        isOnline = true;
+                        serverName = playersServerInfo.getName();
+                        if(plugin.isDebugEnabled()) {
+                            SendConsoleMessage.debug("Player with uuid: " +  uuid + "is online");
+                        }
+                    }   else {
+                        if(plugin.isDebugEnabled()) {
+                            SendConsoleMessage.debug("Player with uuid: " +  uuid + "is offline");
+                        }
+                        isOnline = false;
+                    }
+
+                } else {
+                    try {
+                        if(plugin.isDebugEnabled()) {
+                            SendConsoleMessage.debug("RedisBungee is not installed on this server, bungee API to identify if player is online");
+                        }
+                        Server playersServer = plugin.getProxy().getPlayer(uuid).getServer();
+                        if(plugin.isDebugEnabled()) {
+                            if(playersServer == null) {
+                                SendConsoleMessage.debug("Players server is null, not online");
+                            }
+                        }
+                        if(playersServer != null ){
+                            serverName = playersServer.getInfo().getName();
+                            isOnline = true;
+                        }
+                    } catch (NullPointerException e) {}
+                }
+
                 plugin.getDatabaseManager().addPlayerAllTimeVote(uuid, playerName);
                 plugin.getDatabaseManager().addPlayerMonthlyVote(uuid, playerName);
-                plugin.getDatabaseManager().addVoteLog(uuid, playerName, "UVTestVote", "127.0.0.1");
+                plugin.getDatabaseManager().addVoteLog(uuid, playerName, "UVTestVote", "127.0.0.1", serverName);
                 Util.sendMessage(sender, ChatColor.GREEN + "Successfully added vote for player: " + playerName);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -53,7 +53,7 @@ public class UltimateVotesBungee extends Plugin {
                 @Override
                 public void run() {
                     if(getFileManager().isDebugEnabled()) {
-                        SendConsoleMessage.info("Clearing vote spam prevention cache.");
+                        SendConsoleMessage.debug("Clearing vote spam prevention cache.");
                     }
                     getUtil().clearVotedPlayers();
                 }
