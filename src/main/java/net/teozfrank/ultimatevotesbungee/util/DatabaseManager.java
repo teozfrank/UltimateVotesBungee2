@@ -28,6 +28,7 @@ public class DatabaseManager {
                     setupMonthlyVotes();
                     setupLastReset();
                     setupTopVoters();
+                    setupVoteLog();
                 }
             });
 
@@ -39,6 +40,107 @@ public class DatabaseManager {
         uuidList = new ArrayList<UUID>();
         uuidToOrigionalName = new HashMap<UUID, String>();
     }
+
+    public void addVoteLog(UUID playerUUID, String playerName, String serviceName, String IPAddress, String serverName) {
+        String sql = "INSERT INTO VOTELOG VALUES (NULL, '" + playerUUID +"', '"+ playerName
+                + "', '" + serviceName
+                + "', '" + serverName
+                + "', '" + IPAddress + "', NULL)";
+        if(plugin.isDebugEnabled()) {
+            SendConsoleMessage.debug(sql);
+        }
+        boolean success = execute(sql);
+        if(! success) {
+            SendConsoleMessage.error("Error inserting VoteLog!");
+        }
+    }
+
+    public void setupVoteLog() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            String query = "SHOW TABLES LIKE 'VOTELOG'";
+            if(plugin.isDebugEnabled()) {
+                SendConsoleMessage.debug("Preparing initial sql statement for VoteLog.");
+            }
+            PreparedStatement statement = getConnection().prepareStatement(query);
+            int i;
+            ResultSet result = statement.executeQuery();
+            i = 0;
+            while (result.next()) {
+                i++;
+            }
+            result.close();
+            statement.close();
+            if(!connection.isClosed() && !plugin.getFileManager().isMaintainConnection()) {
+                if(plugin.isDebugEnabled()) {
+                    SendConsoleMessage.debug("Closing connection, connection is not being maintained.");
+                }
+                connection.close();
+            }
+            if (! (i > 0)) {
+                SendConsoleMessage.info("Table VOTELOG does not exist creating it for you!");
+                String sql = "CREATE TABLE VOTELOG "
+                        + "(ID BIGINT NOT NULL AUTO_INCREMENT UNIQUE,"
+                        + " UUID VARCHAR(40) NOT NULL, "
+                        + " PLAYER VARCHAR(50) NOT NULL, "
+                        + " SERVICENAME VARCHAR(50),"
+                        + " IPADDRESS VARCHAR(30),"
+                        + " SERVERNAME VARCHAR(30) NULL DEFAULT NULL, "
+                        + " VOTETIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                        + " PRIMARY KEY ( ID ))";
+                statement = getConnection().prepareStatement(sql);
+                statement.executeUpdate();
+                statement.close();
+                if(!connection.isClosed() && !plugin.getFileManager().isMaintainConnection()) {
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("Closing connection, connection is not being maintained.");
+                    }
+                    connection.close();
+                }
+            } else {
+                if(plugin.isDebugEnabled()) {
+                    SendConsoleMessage.debug("Table VOTELOG exists, checking for servername column!");
+                }
+                String checkServerNameColumnQuery = "SHOW COLUMNS FROM VOTELOG LIKE 'SERVERNAME'";
+
+                PreparedStatement statement2 = getConnection().prepareStatement(checkServerNameColumnQuery);
+                int i2;
+                ResultSet result2 = statement2.executeQuery();
+                i2 = 0;
+                while (result2.next()) {
+                    i2++;
+                }
+
+                if (! (i2 > 0)) {
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("Adding servername column as it is missing!");
+                    }
+                    String sql = "ALTER TABLE VOTELOG ADD SERVERNAME VARCHAR(30) NULL DEFAULT NULL AFTER IPADDRESS";
+                    statement = getConnection().prepareStatement(sql);
+                    statement.executeUpdate();
+                    statement.close();
+
+                } else {
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("Column servername exits, nothing to do here!");
+                    }
+                }
+                if(!connection.isClosed() && !plugin.getFileManager().isMaintainConnection()) {
+                    if(plugin.isDebugEnabled()) {
+                        SendConsoleMessage.debug("Closing connection, connection is not being maintained.");
+                    }
+                    connection.close();
+                }
+
+            }
+        } catch (ClassNotFoundException ex) {
+            SendConsoleMessage.warning("DatabaseManager driver wasn't found!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            //SendConsoleMessage.warning("DatabaseManager could not establish a connection when trying to setup all votes: " + e.printStackTrace(););
+        }
+    }
+
 
     public void setupTopVoters() {
         try {
@@ -156,7 +258,7 @@ public class DatabaseManager {
                 return connection;
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("SQL Error! " + e.getMessage());
+            SendConsoleMessage.error("SQL Error! " + e.getMessage());
         } catch (NullPointerException e) {
 
         }
@@ -383,7 +485,7 @@ public class DatabaseManager {
         String query = "SELECT VOTES FROM DAILYTARGET WHERE ID ='1'";
 
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("getting daily target vote count: " + query);
+            SendConsoleMessage.debug("getting daily target vote count: " + query);
         }
         int voteCount = 0;
         int rows = 0;
@@ -414,7 +516,7 @@ public class DatabaseManager {
         String query = "SELECT LASTRESET FROM DAILYTARGET WHERE ID ='1'";
 
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("getting vote target last reset date: " + query);
+            SendConsoleMessage.debug("getting vote target last reset date: " + query);
         }
         java.sql.Date lastReset = null;
         int rows = 0;
@@ -445,7 +547,7 @@ public class DatabaseManager {
         String query = "SELECT LASTREACHED FROM DAILYTARGET WHERE ID ='1'";
 
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("getting vote target last reset date: " + query);
+            SendConsoleMessage.debug("getting vote target last reset date: " + query);
         }
         java.sql.Date lastReset = null;
         int rows = 0;
@@ -479,7 +581,7 @@ public class DatabaseManager {
         java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
         String query = "SELECT VOTES FROM DAILYTARGET WHERE ID ='1'";
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("Adding vote to daily target: " + query);
+            SendConsoleMessage.debug("Adding vote to daily target: " + query);
         }
         int voteCount = 0;
         int unclaimedCount = 0;
@@ -499,7 +601,7 @@ public class DatabaseManager {
                 int newVoteValue = voteCount + 1;
                 String sql = "UPDATE DAILYTARGET SET VOTES ='" + newVoteValue + "' WHERE ID='1'";
                 if (plugin.isDebugEnabled()) {
-                    plugin.getLogger().info(sql);
+            SendConsoleMessage.debug(sql);
                 }
                 Statement statement2 = this.getConnection().createStatement();
                 statement2.executeUpdate(sql);
@@ -529,7 +631,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("SQL ERROR while resetting daily vote target! " + e);
+            SendConsoleMessage.error("SQL ERROR while resetting daily vote target! " + e);
         }
     }
 
@@ -543,7 +645,7 @@ public class DatabaseManager {
             }
             boolean success = execute(sql);
             if (!success) {
-                SendConsoleMessage.severe("UUID update failed for player " + entry.getKey());
+                SendConsoleMessage.error("UUID update failed for player " + entry.getKey());
                 failedUpdates++;
             }
             if (!uuidList.contains(entry.getValue())) {
@@ -564,7 +666,7 @@ public class DatabaseManager {
             }
             return true;
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Error executing query: " + sql +" Error: "+ e.getMessage());
+            SendConsoleMessage.error("Error executing query: " + sql +" Error: "+ e.getMessage());
             return false;
         }
     }
@@ -628,7 +730,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("SQL Error getting uuid from username! " + e.getMessage());
+            SendConsoleMessage.error("SQL Error getting uuid from username! " + e.getMessage());
         }
 
         if (results == 0) {
@@ -726,7 +828,7 @@ public class DatabaseManager {
                                 SendConsoleMessage.debug("UUID successfully updated.");
                                 this.updateExistingMonthlyVoteRecord(playerUUID, playerName);
                             } else {
-                                SendConsoleMessage.severe("UUID was not updated successfully please check logs!!");
+                                SendConsoleMessage.error("UUID was not updated successfully please check logs!!");
                             }
                         }
                     }
@@ -762,7 +864,7 @@ public class DatabaseManager {
         }
         String query = "SELECT VOTES FROM ALLVOTES WHERE UUID='" + playerUUID + "'";
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("Add Player AllTime Vote: " + query);
+            SendConsoleMessage.debug("Add Player AllTime Vote: " + query);
         }
         int p = 0;
 
@@ -812,7 +914,7 @@ public class DatabaseManager {
                                 SendConsoleMessage.debug("UUID successfully updated.");
                                 this.updateExistingAllTimeVoteRecord(playerUUID, playerName);
                             } else {
-                                SendConsoleMessage.severe("UUID was not updated successfully please check logs!!");
+                                SendConsoleMessage.error("UUID was not updated successfully please check logs!!");
                             }
                         }
                     }
@@ -841,7 +943,7 @@ public class DatabaseManager {
         java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
         String sql = "INSERT INTO MONTHLYVOTES VALUES (null, '" + playerUUID + "', '" + playerName + "','" + 1 + "','" + 1 + "','" + date + "')";//inserts a new all time vote record with 1 vote
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("Create New Monthly Vote Record: " + sql);
+            SendConsoleMessage.debug("Create New Monthly Vote Record: " + sql);
         }
         execute(sql);
     }
@@ -850,7 +952,7 @@ public class DatabaseManager {
         java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
         String sql = "INSERT INTO ALLVOTES VALUES (null, '" + playerUUID + "', '" + playerName + "','" + 1 + "','" + date + "')";//inserts a new all time vote record with 1 vote
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("Create New All Time Vote Record: " + sql);
+            SendConsoleMessage.debug("Create New All Time Vote Record: " + sql);
         }
         execute(sql);
     }
@@ -858,7 +960,7 @@ public class DatabaseManager {
     public void updateExistingMonthlyVoteRecord(UUID playerUUID, String playerName) {
         String query = "SELECT VOTES,UNCLAIMEDVOTES,PLAYER FROM MONTHLYVOTES WHERE UUID ='" + playerUUID + "'";
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("Update Existing Vote Record: " + query);
+            SendConsoleMessage.debug("Update Existing Vote Record: " + query);
         }
         int voteCount = 0;
         int unclaimedCount = 0;
@@ -882,7 +984,7 @@ public class DatabaseManager {
                 java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
                 String sql = "UPDATE MONTHLYVOTES SET VOTES ='" + newVoteValue + "',LASTVOTE ='" + date + "', UNCLAIMEDVOTES='" + newUnclaimedCount + "' WHERE `UUID`='" + playerUUID + "'";
                 if (plugin.isDebugEnabled()) {
-                    plugin.getLogger().info(sql);
+                    SendConsoleMessage.debug(sql);
                     SendConsoleMessage.debug("RowCount: " + rows);
                     SendConsoleMessage.debug("VoteCount: " + voteCount);
                     SendConsoleMessage.debug("UnclaimedCount: " + unclaimedCount);
@@ -911,7 +1013,7 @@ public class DatabaseManager {
     public void updateExistingAllTimeVoteRecord(UUID playerUUID, String playerName) {
         String query = "SELECT VOTES,PLAYER FROM ALLVOTES WHERE UUID ='" + playerUUID + "'";
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("Update Existing Vote Record: " + query);
+            SendConsoleMessage.debug("Update Existing Vote Record: " + query);
         }
         int voteCount = 0;
         int unclaimedCount = 0;
@@ -934,13 +1036,13 @@ public class DatabaseManager {
                 java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
                 String sql = "UPDATE ALLVOTES SET VOTES ='" + newVoteValue + "',LASTVOTE ='" + date + "' WHERE `UUID`='" + playerUUID + "'";
                 if (plugin.isDebugEnabled()) {
-                    plugin.getLogger().info(sql);
+            SendConsoleMessage.debug(sql);
                 }
                 Statement statement2 = this.getConnection().createStatement();
                 statement2.executeUpdate(sql);
                 statement2.close();
             } else {
-                plugin.getLogger().severe("Duplicate player names please check database!");
+                SendConsoleMessage.error("Duplicate player names please check database!");
             }
             if (!playerNameSQL.equals(playerName)) {
                 if (plugin.isDebugEnabled()) {
@@ -952,7 +1054,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            plugin.getLogger().severe("SQL Error!" + e);
+            SendConsoleMessage.error("SQL Error!" + e);
         }
 
     }
@@ -995,7 +1097,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load all time votes!" + e);
+            SendConsoleMessage.error("Could not load all time votes!" + e);
         }
         return votesAllTime2;
     }
@@ -1025,7 +1127,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load all time votes!" + e);
+            SendConsoleMessage.error("Could not load all time votes!" + e);
         }
         return votesAllTime2;
     }
@@ -1055,7 +1157,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not retrieve player votes!" + e);
+            SendConsoleMessage.error("Could not retrieve player votes!" + e);
         }
         return votesAllTime;
     }
@@ -1091,7 +1193,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not retrieve player votes!" + e);
+            SendConsoleMessage.error("Could not retrieve player votes!" + e);
         }
         return votesAllTime;
     }
@@ -1121,7 +1223,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load unclaimed votes!" + e);
+            SendConsoleMessage.error("Could not load unclaimed votes!" + e);
         }
 
         if (results == 0) {
@@ -1159,7 +1261,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load unclaimed votes!" + e);
+            SendConsoleMessage.error("Could not load unclaimed votes!" + e);
         }
 
         if (amount == 0) {
@@ -1182,7 +1284,7 @@ public class DatabaseManager {
                 }
                 return true;
             } catch (SQLException e) {
-                SendConsoleMessage.severe("SQL Error!" + e);
+                SendConsoleMessage.error("SQL Error!" + e);
             }
         }
         return false;
@@ -1210,7 +1312,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not check players votes by UUID!" + e);
+            SendConsoleMessage.error("Could not check players votes by UUID!" + e);
         }
 
         if (results == 0) {
@@ -1248,7 +1350,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could check players votes by username!" + e);
+            SendConsoleMessage.error("Could check players votes by username!" + e);
         }
 
         if (results == 0) {
@@ -1280,7 +1382,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("could not check if player voted today!");
+            SendConsoleMessage.error("could not check if player voted today!");
         }
 
         if (results == 1) {
@@ -1305,7 +1407,7 @@ public class DatabaseManager {
         java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
         String sql2 = "UPDATE LASTRESET SET LASTRESET ='" + date + "' WHERE TABLENAME='" + tablename + "'";
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info(sql);
+            SendConsoleMessage.debug(sql);
             plugin.getLogger().info(sql2);
         }
         try {
@@ -1325,7 +1427,7 @@ public class DatabaseManager {
         java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
         String sql = "INSERT INTO LASTRESET VALUES (null,'" + tableName + "','" + date + "')";
         if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("Add initial last reset: " + sql);
+            SendConsoleMessage.debug("Add initial last reset: " + sql);
         }
         try {
             Statement statement = getConnection().createStatement();
@@ -1397,7 +1499,7 @@ public class DatabaseManager {
                 connection.close();
             }
         } catch (SQLException e) {
-            SendConsoleMessage.severe("Could not load top 5 daily votes votes!" + e);
+            SendConsoleMessage.error("Could not load top 5 daily votes votes!" + e);
         }
         return topFiveDailyVotes;
     }

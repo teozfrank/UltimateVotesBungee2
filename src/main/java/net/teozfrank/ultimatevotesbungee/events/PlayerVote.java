@@ -1,6 +1,8 @@
 package net.teozfrank.ultimatevotesbungee.events;
 
 
+import com.imaginarycode.minecraft.redisbungee.RedisBungee;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.teozfrank.ultimatevotesbungee.main.UltimateVotesBungee;
 import net.teozfrank.ultimatevotesbungee.util.*;
 import com.vexsoftware.votifier.bungee.events.VotifierEvent;
@@ -9,7 +11,6 @@ import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
-import net.teozfrank.ultimatevotesbungee.util.*;
 
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public class PlayerVote implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void PlayerVoteMade(VotifierEvent e) {
 
-        final DatabaseManager mySql = plugin.getMySql();
+        final DatabaseManager databaseManager = plugin.getDatabaseManager();
         final FileManager fm = plugin.getFileManager();
         final Util util = plugin.getUtil();
         final BroadcastManager bm = plugin.getBroadcastManager();
@@ -35,13 +36,14 @@ public class PlayerVote implements Listener {
         final Vote v = e.getVote();
         final String voteUsername = v.getUsername();
         final String service = v.getServiceName();
+        final String ipAddress = v.getAddress();
 
         if (!fm.isMySQLEnabled()) {
             return;
         }
 
         if(plugin.isDebugEnabled()) {
-            SendConsoleMessage.debug("Vote received from username " + voteUsername + " from " + v.getServiceName() + " with IP " + v.getAddress());
+            SendConsoleMessage.debug("Vote received from username " + voteUsername + " from " + v.getServiceName() + " with IP " + ipAddress);
         }
 
         if (v.getUsername().length() == 0 || v.getUsername().equalsIgnoreCase("anonymous") || v.getUsername().contains("test")) {
@@ -66,18 +68,51 @@ public class PlayerVote implements Listener {
 
                 @Override
                 public void run() {
-                    UUID playerUUID = mySql.getUUIDFromUsername(voteUsername);
+                    UUID playerUUID = databaseManager.getUUIDFromUsername(voteUsername);
+                    String serverName = null;
 
                     boolean isOnline = false;
 
-                    try {
-                        Server playersServer = plugin.getProxy().getPlayer(playerUUID).getServer();
-                        if(playersServer != null ){
-                            isOnline = true;
+                    if (plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null) {
+                        if(plugin.isDebugEnabled()) {
+                            SendConsoleMessage.debug("RedisBungee is installed on this server, using to identify if player is online");
                         }
-                    } catch (NullPointerException e) {}
+                        ServerInfo playersServerInfo = RedisBungee.getApi().getServerFor(playerUUID);//get server object for redis
+                        if (playersServerInfo != null) {
+                            isOnline = true;
+                            serverName = playersServerInfo.getName();
+                            if(plugin.isDebugEnabled()) {
+                                SendConsoleMessage.debug("Player with uuid: " +  playerUUID + "is online");
+                            }
+                        }   else {
+                            if(plugin.isDebugEnabled()) {
+                                SendConsoleMessage.debug("Player with uuid: " +  playerUUID + "is offline");
+                            }
+                            isOnline = false;
+                        }
+
+                    } else {
+                        try {
+                            if(plugin.isDebugEnabled()) {
+                                SendConsoleMessage.debug("RedisBungee is not installed on this server, bungee API to identify if player is online");
+                            }
+                            Server playersServer = plugin.getProxy().getPlayer(playerUUID).getServer();
+                            if(plugin.isDebugEnabled()) {
+                                if(playersServer == null) {
+                                    SendConsoleMessage.debug("Players server is null, not online");
+                                }
+                            }
+                            if(playersServer != null ){
+                                serverName = playersServer.getInfo().getName();
+                                isOnline = true;
+                            }
+                        } catch (NullPointerException e) {}
+                    }
 
                     if(! isOnline && ! plugin.getFileManager().rewardOffline()) {//if the player is not online and we are not rewarding offline
+                        if(plugin.isDebugEnabled()) {
+                            SendConsoleMessage.debug("Player is not online and reward offline is set to false, vote ignored");
+                        }
                         return;// do not reward
                     }
 
@@ -111,8 +146,10 @@ public class PlayerVote implements Listener {
                         if(plugin.isDebugEnabled()) {
                             SendConsoleMessage.debug("Player UUID for player " + voteUsername + " :" + playerUUID.toString());
                         }
-                        mySql.addPlayerAllTimeVote(playerUUID, voteUsername);
-                        mySql.addPlayerMonthlyVote(playerUUID, voteUsername);
+                        databaseManager.addPlayerAllTimeVote(playerUUID, voteUsername);
+                        databaseManager.addPlayerMonthlyVote(playerUUID, voteUsername);
+                        databaseManager.addVoteLog(playerUUID, voteUsername, service, ipAddress, serverName);
+
                         plugin.getUtil().sendServerMessage(playerUUID);
                     } else {
                         if(plugin.isDebugEnabled()) {

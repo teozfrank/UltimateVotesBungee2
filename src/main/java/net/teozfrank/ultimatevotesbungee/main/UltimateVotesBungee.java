@@ -7,6 +7,7 @@ import net.teozfrank.ultimatevotesbungee.util.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Plugin;
 
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,7 +22,7 @@ public class UltimateVotesBungee extends Plugin {
 
     @Override
     public void onEnable() {
-        if(this.getDescription().getVersion().contains("dev")) {
+        if(this.getDescription().getVersion().contains("SNAPSHOT")) {
             SendConsoleMessage.warning("---------------------------------------------");
             SendConsoleMessage.warning("This is a development version of UltimateVotes, "
                     + "it is recommended to backup your entire UltimateVotes plugin folder and database before running this build.");
@@ -46,13 +47,13 @@ public class UltimateVotesBungee extends Plugin {
             return;
         }
         if(getFileManager().isVoteSpamPrevention()) {
-            getLogger().info("Starting clear voter task.");
+            SendConsoleMessage.info("Starting clear voter task.");
             getProxy().getScheduler().schedule(this, new Runnable() {
 
                 @Override
                 public void run() {
                     if(getFileManager().isDebugEnabled()) {
-                        getLogger().info("Clearing vote spam prevention cache.");
+                        SendConsoleMessage.debug("Clearing vote spam prevention cache.");
                     }
                     getUtil().clearVotedPlayers();
                 }
@@ -60,6 +61,31 @@ public class UltimateVotesBungee extends Plugin {
         }
         registerCommands();
         submitStats();
+    }
+
+    @Override
+    public void onDisable() {
+        this.closeConnections();
+    }
+
+    public void closeConnections() {
+        if(! fileManager.isMySQLEnabled()) {
+            if(isDebugEnabled()) {
+                SendConsoleMessage.debug("SQL is disabled, not closing connections");
+            }
+            return;
+        }
+
+        SendConsoleMessage.info("Closing SQL connection.");
+        try {
+            if(! getDatabaseManager().getConnection().isClosed()) {
+                getDatabaseManager().getConnection().close();
+            }
+        } catch (SQLException e) {
+            SendConsoleMessage.error("SQL Error! " + e.getMessage());
+        } catch (NullPointerException e) {
+            //ignored
+        }
     }
 
     private void submitStats() {
@@ -70,7 +96,7 @@ public class UltimateVotesBungee extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new UVBExecutor(this));
     }
 
-    public DatabaseManager getMySql() {
+    public DatabaseManager getDatabaseManager() {
         return mySql;
     }
 
