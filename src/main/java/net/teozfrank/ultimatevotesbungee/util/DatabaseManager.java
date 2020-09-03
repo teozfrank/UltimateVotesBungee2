@@ -84,7 +84,7 @@ public class DatabaseManager {
                         + " UUID VARCHAR(40) NOT NULL, "
                         + " PLAYER VARCHAR(50) NOT NULL, "
                         + " SERVICENAME VARCHAR(50),"
-                        + " IPADDRESS VARCHAR(30),"
+                        + " IPADDRESS VARCHAR(60),"
                         + " SERVERNAME VARCHAR(30) NULL DEFAULT NULL, "
                         + " VOTETIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                         + " PRIMARY KEY ( ID ))";

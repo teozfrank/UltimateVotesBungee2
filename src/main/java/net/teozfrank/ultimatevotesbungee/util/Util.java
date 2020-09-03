@@ -80,10 +80,6 @@ public class Util {
             }
             return;
         }
-        //TODO sudo code for this,
-        //identify players server, if server is on another instance, send message to that instance
-        //if server is on same instance send plugin message locally
-        //
         if (plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null) {
 
             try {
@@ -123,41 +119,6 @@ public class Util {
                         return;
                     }
                 }
-
-                /*ByteArrayOutputStream b = new ByteArrayOutputStream();
-                DataOutputStream out = new DataOutputStream(b);
-
-                try {
-                    out.writeUTF("uv:rewards");
-                    out.writeUTF(playerUUID.toString());
-                    if(plugin.isDebugEnabled()) {
-                        SendConsoleMessage.debug("Send channel message to redis for uuid: " + playerUUID);
-                        SendConsoleMessage.debug("Channel: uv:rewards");
-                        SendConsoleMessage.debug("Bytes: " + b.toString());
-                    }
-                    //TODO see how this works?
-                    playersServerInfo.sendData("uv:rewards", b.toByteArray());
-                    RedisBungee.getApi().sendChannelMessage("uv:rewards", b.toString());
-                    if(plugin.isDebugEnabled()) {
-                        SendConsoleMessage.debug("Sending UUID: " + playerUUID );
-                    }
-                } catch (IOException e) {
-                    SendConsoleMessage.error("Error sending plugin message: " + e.getMessage());
-                }*/
-
-                /*ServerInfo localProxyServer = plugin.getProxy().getServerInfo(serverName);//try resolve to local servers
-
-                if(localProxyServer == null ){// if the local proxy server is null, that means the player server is on another instance,
-                    // we need to send to redis api
-                    //TODO get this working!
-                    sendPluginMessageRedis(playerUUID);
-                    return;
-                } else {
-                    if(plugin.isDebugEnabled()) {
-                        SendConsoleMessage.debug("Player with uuid " + playerUUID
-                                + " is part of local servers of this proxy sending local plugin message.");
-                    }
-                }*/
             } catch (NullPointerException e) {
                 SendConsoleMessage.error("Error Sending Server Message: " + e.getMessage());
             }
@@ -220,7 +181,6 @@ public class Util {
                 SendConsoleMessage.debug("Channel: uv:rewards");
                 SendConsoleMessage.debug("Bytes: " + b.toString());
             }
-            //TODO see how this works?
             RedisBungee.getApi().sendChannelMessage("uv:rewards", b.toString());
             if(plugin.isDebugEnabled()) {
                 SendConsoleMessage.debug("Sending UUID: " + playerUUID );
