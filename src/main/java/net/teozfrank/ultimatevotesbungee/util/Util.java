@@ -132,7 +132,10 @@ public class Util {
             Server playersServer = plugin.getProxy().getPlayer(playerUUID).getServer();
             sendPluginMessage(playerUUID, playersServer);
         } catch (NullPointerException e) {
-            SendConsoleMessage.error("Null when trying to resolve players server are they online?" + e.getMessage());
+            if(plugin.isDebugEnabled()) {
+                SendConsoleMessage.debug("Null when trying to resolve players server are they online?" + e.getMessage());
+            }
+
         }
     }
 
