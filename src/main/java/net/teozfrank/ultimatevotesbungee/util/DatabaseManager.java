@@ -44,8 +44,8 @@ public class DatabaseManager {
     public void addVoteLog(UUID playerUUID, String playerName, String serviceName, String IPAddress, String serverName) {
         String sql = "INSERT INTO VOTELOG VALUES (NULL, '" + playerUUID +"', '"+ playerName
                 + "', '" + serviceName
-                + "', '" + serverName
-                + "', '" + IPAddress + "', NULL)";
+                + "', '" + IPAddress
+                + "', '" + serverName + "', NULL)";
         if(plugin.isDebugEnabled()) {
             SendConsoleMessage.debug(sql);
         }
@@ -84,7 +84,7 @@ public class DatabaseManager {
                         + " UUID VARCHAR(40) NOT NULL, "
                         + " PLAYER VARCHAR(50) NOT NULL, "
                         + " SERVICENAME VARCHAR(50),"
-                        + " IPADDRESS VARCHAR(30),"
+                        + " IPADDRESS VARCHAR(60),"
                         + " SERVERNAME VARCHAR(30) NULL DEFAULT NULL, "
                         + " VOTETIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                         + " PRIMARY KEY ( ID ))";
