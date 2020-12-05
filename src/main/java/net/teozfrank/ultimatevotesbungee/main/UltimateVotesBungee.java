@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class UltimateVotesBungee extends Plugin {
 
-    private DatabaseManager mySql;
+    private static DatabaseManager mySql;
     private FileManager fileManager;
     private BroadcastManager broadcastManager;
     private Util util;
@@ -96,7 +96,7 @@ public class UltimateVotesBungee extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new UVBExecutor(this));
     }
 
-    public DatabaseManager getDatabaseManager() {
+    public static DatabaseManager getDatabaseManager() {
         return mySql;
     }
 
