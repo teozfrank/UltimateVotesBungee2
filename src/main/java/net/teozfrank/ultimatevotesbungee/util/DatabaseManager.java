@@ -235,11 +235,11 @@ public class DatabaseManager {
             SendConsoleMessage.info("Attempting to connect to MySQL database.");
             Connection sqlDatabaseConnection;
             if (plugin.getFileManager().isMaintainConnection()) {
-                sqlDatabaseConnection = DriverManager.getConnection("jdbc:mysql://" + MySqlHost + ":" + MySqlPort + "/" + MySqlDatabase + "?autoReconnect=true&useSSL=false", MySqlUsername, MySqlPassword);
+                sqlDatabaseConnection = DriverManager.getConnection("jdbc:mysql://" + MySqlHost + ":" + MySqlPort + "/" + MySqlDatabase + "?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true", MySqlUsername, MySqlPassword);
                 SendConsoleMessage.info("Connection to MySQL database successful.");
                 this.connection = sqlDatabaseConnection;
             } else {
-                sqlDatabaseConnection = DriverManager.getConnection("jdbc:mysql://" + MySqlHost + ":" + MySqlPort + "/" + MySqlDatabase + "?useSSL=false", MySqlUsername, MySqlPassword);
+                sqlDatabaseConnection = DriverManager.getConnection("jdbc:mysql://" + MySqlHost + ":" + MySqlPort + "/" + MySqlDatabase + "?useSSL=false&allowPublicKeyRetrieval=true", MySqlUsername, MySqlPassword);
                 SendConsoleMessage.info("Connection to MySQL database successful.");
                 this.connection = sqlDatabaseConnection;
             }
