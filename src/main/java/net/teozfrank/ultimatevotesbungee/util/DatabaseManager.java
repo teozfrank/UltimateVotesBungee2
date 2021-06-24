@@ -701,7 +701,7 @@ public class DatabaseManager {
                 SendConsoleMessage.debug("Player is online retrieving UUID.");
             }
             UUID playerUUID = player.getUniqueId();
-            if (!cachedUUIDs.containsKey(username)) {
+            if (! cachedUUIDs.containsKey(username)) {
                 cachedUUIDs.put(username, playerUUID);
             }
             if(plugin.isDebugEnabled()) {
@@ -721,7 +721,7 @@ public class DatabaseManager {
 
             while (result.next()) {
                 uuid = UUID.fromString(result.getString("UUID"));
-                if (!cachedUUIDs.containsKey(username)) {
+                if (! cachedUUIDs.containsKey(username) && uuid != null) {
                     cachedUUIDs.put(username, uuid);
                 }
                 results++;
@@ -743,7 +743,7 @@ public class DatabaseManager {
                 try {
                     UUID returnedUUID = uuidFetcher.call();
                     uuid = returnedUUID;
-                    if (!cachedUUIDs.containsKey(username)) {
+                    if (! cachedUUIDs.containsKey(username) && uuid != null) {
                         cachedUUIDs.put(username, uuid);
                     }
                     return uuid;
@@ -757,7 +757,7 @@ public class DatabaseManager {
             }
             else {
 
-                if (!cachedUUIDs.containsKey(username)) {
+                if (! cachedUUIDs.containsKey(username) && uuid != null) {
                     cachedUUIDs.put(username, uuid);
                 }
                 if(plugin.isDebugEnabled()) {
