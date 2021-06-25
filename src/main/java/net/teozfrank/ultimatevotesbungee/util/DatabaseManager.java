@@ -45,7 +45,7 @@ public class DatabaseManager {
         String sql = "INSERT INTO VOTELOG VALUES (NULL, '" + playerUUID +"', '"+ playerName
                 + "', '" + serviceName
                 + "', '" + IPAddress
-                + "', '" + serverName + "', NULL)";
+                + "', '" + serverName + "', CURRENT_TIMESTAMP)";
         if(plugin.isDebugEnabled()) {
             SendConsoleMessage.debug(sql);
         }
