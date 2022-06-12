@@ -46,7 +46,7 @@ public class PlayerVote implements Listener {
             SendConsoleMessage.debug("Vote received from username " + voteUsername + " from " + v.getServiceName() + " with IP " + ipAddress);
         }
 
-        if (v.getUsername().length() == 0 || v.getUsername().equalsIgnoreCase("anonymous") || v.getUsername().contains("test")) {
+        if (v.getUsername().length() == 0 || v.getUsername().equalsIgnoreCase("anonymous")) {
             return;//ignored
         }
 
