@@ -45,7 +45,7 @@ public class DatabaseManager {
         String sql = "INSERT INTO VOTELOG VALUES (NULL, '" + playerUUID +"', '"+ playerName
                 + "', '" + serviceName
                 + "', '" + IPAddress
-                + "', '" + serverName + "', NULL)";
+                + "', '" + serverName + "', CURRENT_TIMESTAMP)";
         if(plugin.isDebugEnabled()) {
             SendConsoleMessage.debug(sql);
         }
@@ -232,15 +232,23 @@ public class DatabaseManager {
             String MySqlUsername = plugin.getFileManager().getMySQLUser();
             String MySqlPassword = plugin.getFileManager().getMySQLPass();
 
-            SendConsoleMessage.info("Attempting to connect to MySQL database.");
+            if(plugin.isDebugEnabled()) {
+                SendConsoleMessage.debug("Attempting to connect to MySQL database.");
+            }
+
             Connection sqlDatabaseConnection;
             if (plugin.getFileManager().isMaintainConnection()) {
                 sqlDatabaseConnection = DriverManager.getConnection("jdbc:mysql://" + MySqlHost + ":" + MySqlPort + "/" + MySqlDatabase + "?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true", MySqlUsername, MySqlPassword);
-                SendConsoleMessage.info("Connection to MySQL database successful.");
+                if(plugin.isDebugEnabled()) {
+                    SendConsoleMessage.debug("Connection to MySQL database successful.");
+                }
+
                 this.connection = sqlDatabaseConnection;
             } else {
                 sqlDatabaseConnection = DriverManager.getConnection("jdbc:mysql://" + MySqlHost + ":" + MySqlPort + "/" + MySqlDatabase + "?useSSL=false&allowPublicKeyRetrieval=true", MySqlUsername, MySqlPassword);
-                SendConsoleMessage.info("Connection to MySQL database successful.");
+                if(plugin.isDebugEnabled()) {
+                    SendConsoleMessage.debug("Connection to MySQL database successful.");
+                }
                 this.connection = sqlDatabaseConnection;
             }
 
@@ -701,7 +709,7 @@ public class DatabaseManager {
                 SendConsoleMessage.debug("Player is online retrieving UUID.");
             }
             UUID playerUUID = player.getUniqueId();
-            if (!cachedUUIDs.containsKey(username)) {
+            if (! cachedUUIDs.containsKey(username)) {
                 cachedUUIDs.put(username, playerUUID);
             }
             if(plugin.isDebugEnabled()) {
@@ -721,7 +729,7 @@ public class DatabaseManager {
 
             while (result.next()) {
                 uuid = UUID.fromString(result.getString("UUID"));
-                if (!cachedUUIDs.containsKey(username)) {
+                if (! cachedUUIDs.containsKey(username) && uuid != null) {
                     cachedUUIDs.put(username, uuid);
                 }
                 results++;
@@ -743,7 +751,7 @@ public class DatabaseManager {
                 try {
                     UUID returnedUUID = uuidFetcher.call();
                     uuid = returnedUUID;
-                    if (!cachedUUIDs.containsKey(username)) {
+                    if (! cachedUUIDs.containsKey(username) && uuid != null) {
                         cachedUUIDs.put(username, uuid);
                     }
                     return uuid;
@@ -757,7 +765,7 @@ public class DatabaseManager {
             }
             else {
 
-                if (!cachedUUIDs.containsKey(username)) {
+                if (! cachedUUIDs.containsKey(username) && uuid != null) {
                     cachedUUIDs.put(username, uuid);
                 }
                 if(plugin.isDebugEnabled()) {
