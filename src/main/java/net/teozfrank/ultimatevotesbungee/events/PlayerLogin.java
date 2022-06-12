@@ -29,7 +29,7 @@ public class PlayerLogin implements Listener {
         UUID uuid = e.getConnection().getUniqueId();
         String name = e.getConnection().getName();
 
-        if(!mySql.getCachedUUIDs().containsValue(uuid)) {
+        if(! mySql.getCachedUUIDs().containsValue(uuid)) {
             if(plugin.isDebugEnabled()) {
                 SendConsoleMessage.debug("Adding uuid to uuid cache");
             }
