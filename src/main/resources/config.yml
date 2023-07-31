@@ -1,0 +1,44 @@
+# Configuration file for UltimateVotesBungee
+# Copyright (c) teozfrank 2014 - 2023 ,All Rights Reserved
+# This plugin is a purchase from SpigotMC
+# If you did not purchase this please contact the owner, distribution of this plugin is against the terms of this plugin.
+
+# config version, dont touch this as it will break the plugin!
+configVersion: 1.6
+# is mysql enabled
+MySQLEnabled: false
+# mysql host
+MySQLHost: localhost
+# mysql port
+MySQLPort: '3306'
+# mysql database
+MySQLDatabase: ultimatevotes
+# mysql user
+MySQLUser: root
+# mysql password
+MySQLPass: password
+# Should we prevent vote spam prevention by only broadcasting once for each player? (if enabled)
+voteSpamPrevention: true
+# The time in minutes that the vote spam prevention clears the players that have already voted, to allow vote broadcasts to be sent for them again.
+voteSpamPreventionTimeout: 5
+# Should we broadcast a vote message to all servers on the bungeecord instance when a player votes?
+broadcastBungee: true
+# Should we only broadcast when a player is online?
+broadcastOnline: false
+# vote broadcast message
+broadcastBungeeMessage: '&b%player% &aVoted for the server! Use /claim!'
+# vote broadcast hover message
+broadcastBungeeHoverMessage: '&aVote for the server just like &b%player% &adid!'
+# vote broadcast hover message
+broadcastBungeeClickCommand: vote sites
+# Should we broadcast a vote broadcast command to all servers on all bungeecord instances when a player votes? (requires redis bungee installed and configured)
+broadcastRedis: true
+# vote broadcast message
+broadcastRedisCmd: uv broadcast &b%player% &aVoted for the server from &b%service%!
+  &aUse /claim!
+# is debug mode enabled
+debugEnabled: false
+# Maintain connection to the database?
+maintainConnection: true
+# Should we reward or count votes for offline rewards? If set to false, players that are not online will not be rewarded for voting nor will there votes be counted
+rewardOffline: true

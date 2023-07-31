@@ -109,7 +109,7 @@ public class PlayerVote implements Listener {
                         } catch (NullPointerException e) {}
                     }
 
-                    if(! isOnline && ! plugin.getFileManager().rewardOffline()) {//if the player is not online and we are not rewarding offline
+                    if(! isOnline && ! plugin.getFileManager().isRewardOffline()) {//if the player is not online and we are not rewarding offline
                         if(plugin.isDebugEnabled()) {
                             SendConsoleMessage.debug("Player is not online and reward offline is set to false, vote ignored");
                         }
@@ -119,7 +119,7 @@ public class PlayerVote implements Listener {
                     if (fm.isBroadcastBungee()) {
                         if (fm.isVoteSpamPrevention()) {//if vote spam prevention is enabled
                             if (! util.hasVoted(voteUsername)) {//if the player has not voted
-                                if(fm.isBroacastOnline()) {
+                                if(fm.isBroadcastOnline()) {
                                     if(playerUUID != null) {
                                         bm.broadcastBungee(voteUsername, service);
                                     }
@@ -128,7 +128,7 @@ public class PlayerVote implements Listener {
                                 }
                             }
                         } else {
-                            if(fm.isBroacastOnline()) {
+                            if(fm.isBroadcastOnline()) {
                                 if(playerUUID != null) {
                                     bm.broadcastBungee(voteUsername, service);
                                 }
