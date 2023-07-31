@@ -1,5 +1,8 @@
 package net.teozfrank.ultimatevotesbungee.main;
 
+import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 import net.teozfrank.ultimatevotesbungee.commands.UVBExecutor;
 import net.teozfrank.ultimatevotesbungee.events.PlayerLogin;
 import net.teozfrank.ultimatevotesbungee.events.PlayerVote;
@@ -7,6 +10,8 @@ import net.teozfrank.ultimatevotesbungee.util.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Plugin;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +24,8 @@ public class UltimateVotesBungee extends Plugin {
     private FileManager fileManager;
     private BroadcastManager broadcastManager;
     private Util util;
+    private File configFile;
+    private Configuration config;
 
     @Override
     public void onEnable() {
@@ -30,6 +37,20 @@ public class UltimateVotesBungee extends Plugin {
             SendConsoleMessage.warning("---------------------------------------------");
         }
         this.fileManager = new FileManager(this);
+        configFile = new File(getDataFolder(), "config.yml");
+
+        if(!configFile.exists()) {
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                SendConsoleMessage.error("Failed to create config file: " + e.getMessage());
+            }
+        }
+        try {
+            config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
+        } catch (IOException e) {
+            SendConsoleMessage.error("Failed to load config file: " + e.getMessage());
+        }
         this.mySql = new DatabaseManager(this);
         this.util = new Util(this);
         this.broadcastManager = new BroadcastManager(this);
